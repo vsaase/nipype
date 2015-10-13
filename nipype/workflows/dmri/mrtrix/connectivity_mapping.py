@@ -515,7 +515,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     their names to the subject list and their data to the proper folders.
     """
 
-    inputnode = pe.Node(interface=util.IdentityInterface(fields=["subject_id", "dwi", "bvecs", "bvals", "subjects_dir"]), name="inputnode")
+    inputnode = pe.Node(interface=util.IdentityInterface(fields=["subject_id", "dwi", "bvecs", "bvals", "subjects_dir", "resolution_network_file"]), name="inputnode")
 
     outputnode = pe.Node(interface = util.IdentityInterface(fields=["fa",
                                                                 "struct",
@@ -547,7 +547,8 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
                                               ("bvals", "inputnode_within.bvals"),
                                               ("bvecs", "inputnode_within.bvecs"),
                                               ("subject_id", "inputnode_within.subject_id"),
-                                              ("subjects_dir", "inputnode_within.subjects_dir")])
+                                              ("subjects_dir", "inputnode_within.subjects_dir"),
+                                              ("resolution_network_file", "inputnode_within.resolution_network_file")])
                                               ])
 
     connectivity.connect([(mapping, outputnode, [("tck2trk.out_file", "tracts"),
