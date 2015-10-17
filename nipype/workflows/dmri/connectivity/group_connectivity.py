@@ -10,13 +10,6 @@ from ....pipeline import engine as pe  # pypeline engine
 from ....interfaces.utility import Function
 from ....utils.misc import package_check
 
-have_cmp = True
-try:
-    package_check('cmp')
-except Exception as e:
-    have_cmp = False
-else:
-    import cmp
 
 
 def pullnodeIDs(in_network, name_key='dn_name'):

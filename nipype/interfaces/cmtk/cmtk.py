@@ -381,7 +381,8 @@ def cmat(track_file, roi_file, resolution_network_file, matrix_name, matrix_mat_
     finalfibers_fname = op.abspath(endpoint_name + '_streamline_final.trk')
     stats['endpoint_n_fib'] = save_fibers(hdr, fib, finalfibers_fname, final_fibers_idx)
     stats['endpoints_percent'] = float(stats['endpoint_n_fib'])/float(stats['orig_n_fib'])*100
-    stats['intersections_percent'] = float(stats['intersections_n_fib'])/float(stats['orig_n_fib'])*100
+    if intersections:
+        stats['intersections_percent'] = float(stats['intersections_n_fib'])/float(stats['orig_n_fib'])*100
 
     out_stats_file = op.abspath(endpoint_name + '_statistics.mat')
     iflogger.info("Saving matrix creation statistics as %s" % out_stats_file)
@@ -441,8 +442,9 @@ class CreateMatrix(BaseInterface):
 
     >>> import nipype.interfaces.cmtk as cmtk
     >>> conmap = cmtk.CreateMatrix()
-    >>> conmap.roi_file = 'fsLUT_aparc+aseg.nii'
-    >>> conmap.tract_file = 'fibers.trk'
+    >>> conmap.inputs.roi_file = 'fsLUT_aparc+aseg.nii'
+    >>> conmap.inputs.tract_file = 'fibers.trk'
+    >>> conmap.inputs.resolution_network_file = 'resolution_network.graphml'
     >>> conmap.run()                 # doctest: +SKIP
     """
 

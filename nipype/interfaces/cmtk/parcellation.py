@@ -14,7 +14,6 @@ from builtins import range
 import os
 import os.path as op
 import shutil
-import warnings
 
 import numpy as np
 import nibabel as nb

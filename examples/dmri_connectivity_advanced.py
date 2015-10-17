@@ -52,7 +52,6 @@ import nipype.pipeline.engine as pe          # pypeline engine
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.freesurfer as fs    # freesurfer
 import nipype.interfaces.mrtrix as mrtrix
-import nipype.algorithms.misc as misc
 import nipype.interfaces.cmtk as cmtk
 import nipype.interfaces.dipy as dipy
 import inspect

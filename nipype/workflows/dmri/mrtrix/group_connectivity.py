@@ -9,12 +9,6 @@ from ....pipeline import engine as pe          # pipeline engine
 from ....utils.misc import package_check
 from .connectivity_mapping import create_connectivity_pipeline
 
-try:
-    package_check('cmp')
-except Exception as e:
-    warnings.warn('cmp not installed')
-else:
-    import cmp
 
 def create_group_connectivity_pipeline(group_list, group_id, data_dir, subjects_dir, output_dir, template_args_dict=0):
     """Creates a pipeline that performs MRtrix structural connectivity processing

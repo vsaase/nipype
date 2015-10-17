@@ -35,7 +35,7 @@ class BrainMaskOutputSpec(TraitedSpec):
     out_file = File(exists=True, desc='the output response file')
 
 
-class BrainMask(CommandLine):
+class BrainMask(MRTrix3Base):
 
     """
     Convert a mesh surface to a partial volume estimation image

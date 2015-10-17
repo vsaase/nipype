@@ -1,0 +1,2 @@
+from __future__ import absolute_import
+from .connectivity_mapping import create_connectivity_pipeline
