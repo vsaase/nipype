@@ -525,7 +525,6 @@ def merge_csvs(in_list):
 
 def remove_identical_paths(in_files):
     import os.path as op
-    from ..utils.filemanip import split_filename
     if len(in_files) > 1:
         out_names = list()
         commonprefix = op.commonprefix(in_files)

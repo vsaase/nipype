@@ -15,7 +15,7 @@ from ..connectivity.nx import create_networkx_pipeline, create_cmats_to_csv_pipe
 from ...misc.utils import select_aparc_annot
 
 
-def create_connectivity_pipeline(name="connectivity", parcellation_name='scale500'):
+def create_connectivity_pipeline(name="connectivity", parcellation_name='scale500', n_tracks=50000):
     """Creates a pipeline that does the same connectivity processing as in the
     :ref:`example_dmri_connectivity_advanced` example script. Given a subject id (and completed Freesurfer reconstruction)
     diffusion-weighted image, b-values, and b-vectors, the workflow will return the subject's connectome
@@ -119,8 +119,12 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     responsesd = pe.Node(interface=mrtrix3.ResponseSD(),name='responsesd')
     estimatefod = pe.Node(interface=mrtrix3.EstimateFOD(),name='estimatefod')
     tractography = pe.Node(interface=mrtrix3.Tractography(),name='tractography')
-    tractography.inputs.n_tracks = 5000
+    tractography.inputs.n_tracks = n_tracks
 
+
+    tracks2prob = pe.Node(interface=mrtrix3.ComputeTDI(),name='tracks2prob')
+    MRconvert_tracks2prob = pe.Node(interface=mrtrix.MRConvert(),name='MRconvert')
+    MRconvert_tracks2prob.inputs.extension = 'nii'
 
     tck2trk = pe.Node(interface=mrtrix.MRTrix2TrackVis(),name='tck2trk')
     trk2tdi = pe.Node(interface=dipy.TrackDensityMap(),name='trk2tdi')
@@ -275,6 +279,11 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     mapping.connect([(estimatefod, tractography,[("out_file","in_file")])])
     mapping.connect([(brainmask, tractography,[("out_file","seed_image")])])
     mapping.connect([(brainmask, tractography,[("out_file","roi_mask")])])
+    
+    
+    mapping.connect([(tractography, tracks2prob,[("out_file","in_file")])])
+    mapping.connect([(inputnode_within, tracks2prob,[("dwi","reference")])])
+    mapping.connect([(tracks2prob, MRconvert_tracks2prob,[("tract_image","in_file")])])
 
     """
     Structural Processing
@@ -418,7 +427,8 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
         ("merge_nfib_csvs.csv_file", "fiber_csv"),
         ("mri_convert_ROI_scale500.out_file", "rois"),
         ("trk2tdi.out_file", "tdi"),
-        ("mri_convert_Brain.out_file", "struct")])
+        ("mri_convert_Brain.out_file", "struct"),
+        ("MRconvert_tracks2prob.converted", "tracks2prob")])
         ])
 
     connectivity.connect([(cmats_to_csv, outputnode,[("outputnode.csv_file","cmatrices_csv")])])
