@@ -123,7 +123,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
 
 
     tracks2prob = pe.Node(interface=mrtrix3.ComputeTDI(),name='tracks2prob')
-    MRconvert_tracks2prob = pe.Node(interface=mrtrix.MRConvert(),name='MRconvert')
+    MRconvert_tracks2prob = pe.Node(interface=mrtrix.MRConvert(),name='MRconvert_tracks2prob')
     MRconvert_tracks2prob.inputs.extension = 'nii'
 
     tck2trk = pe.Node(interface=mrtrix.MRTrix2TrackVis(),name='tck2trk')
@@ -283,7 +283,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     
     mapping.connect([(tractography, tracks2prob,[("out_file","in_file")])])
     mapping.connect([(inputnode_within, tracks2prob,[("dwi","reference")])])
-    mapping.connect([(tracks2prob, MRconvert_tracks2prob,[("tract_image","in_file")])])
+    mapping.connect([(tracks2prob, MRconvert_tracks2prob,[("out_file","in_file")])])
 
     """
     Structural Processing
@@ -397,7 +397,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
                                                                 "networks",
                                                                 "filtered_tracts",
                                                                 "rois",
-                                                                "tdi",
+                                                                "dipy_tdi","mrtrix_tdi",
                                                                 "mean_fiber_length",
                                                                 "median_fiber_length",
                                                                 "fiber_length_std"]),
@@ -416,19 +416,19 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
                                               ])
 
     connectivity.connect([(mapping, outputnode, [("tck2trk.out_file", "tracts"),
-        ("CFFConverter.connectome_file", "connectome"),
-        ("NxStatsCFFConverter.connectome_file", "nxstatscff"),
-        ("CreateMatrix.matrix_mat_file", "cmatrix"),
-        ("CreateMatrix.mean_fiber_length_matrix_mat_file", "mean_fiber_length"),
-        ("CreateMatrix.median_fiber_length_matrix_mat_file", "median_fiber_length"),
-        ("CreateMatrix.fiber_length_std_matrix_mat_file", "fiber_length_std"),
-        ("CreateMatrix.matrix_files", "networks"),
-        ("CreateMatrix.filtered_tractographies", "filtered_tracts"),
-        ("merge_nfib_csvs.csv_file", "fiber_csv"),
-        ("mri_convert_ROI_scale500.out_file", "rois"),
-        ("trk2tdi.out_file", "tdi"),
-        ("mri_convert_Brain.out_file", "struct"),
-        ("MRconvert_tracks2prob.converted", "tracks2prob")])
+                                                ("CFFConverter.connectome_file", "connectome"),
+                                                ("NxStatsCFFConverter.connectome_file", "nxstatscff"),
+                                                ("CreateMatrix.matrix_mat_file", "cmatrix"),
+                                                ("CreateMatrix.mean_fiber_length_matrix_mat_file", "mean_fiber_length"),
+                                                ("CreateMatrix.median_fiber_length_matrix_mat_file", "median_fiber_length"),
+                                                ("CreateMatrix.fiber_length_std_matrix_mat_file", "fiber_length_std"),
+                                                ("CreateMatrix.matrix_files", "networks"),
+                                                ("CreateMatrix.filtered_tractographies", "filtered_tracts"),
+                                                ("merge_nfib_csvs.csv_file", "fiber_csv"),
+                                                ("mri_convert_ROI_scale500.out_file", "rois"),
+                                                ("trk2tdi.out_file", "dipy_tdi"),
+                                                ("mri_convert_Brain.out_file", "struct"),
+                                                ("MRconvert_tracks2prob.converted", "mrtrix_tdi")])
         ])
 
     connectivity.connect([(cmats_to_csv, outputnode,[("outputnode.csv_file","cmatrices_csv")])])

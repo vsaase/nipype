@@ -253,7 +253,7 @@ def compute_dict_measures(ntwk):
     iflogger.info('Computing measures which return a dictionary:')
     measures = {}
     iflogger.info('...Computing rich club coefficient...')
-    measures['rich_club_coef'] = 0;#nx.rich_club_coefficient(ntwk)
+    measures['rich_club_coef'] = {};#nx.rich_club_coefficient(ntwk)
     return measures
 
 
