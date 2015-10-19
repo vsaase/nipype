@@ -525,6 +525,7 @@ def merge_csvs(in_list):
 
 def remove_identical_paths(in_files):
     import os.path as op
+    from nipype.utils.filemanip import split_filename
     if len(in_files) > 1:
         out_names = list()
         commonprefix = op.commonprefix(in_files)
@@ -627,6 +628,7 @@ class MergeCSVFiles(BaseInterface):
     output_spec = MergeCSVFilesOutputSpec
 
     def _run_interface(self, runtime):
+        from nipype.utils.filemanip import split_filename
         extraheadingBool = False
         extraheading = ''
         rowheadingsBool = False
