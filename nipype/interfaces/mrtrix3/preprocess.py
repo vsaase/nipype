@@ -21,6 +21,82 @@ from ..traits_extension import isdefined
 from ...utils.filemanip import split_filename
 
 
+class MRConvertInputSpec(MRTrix3BaseInputSpec):
+    in_file = File(exists=True, argstr='%s', mandatory=True, position=-2,
+        desc='voxel-order data filename')
+    out_filename = File(genfile=True, argstr='%s', position=-1, desc='Output filename')
+    extract_at_axis = traits.Enum(1,2,3, argstr='-coord %s', position=1,
+                           desc='"Extract data only at the coordinates specified. This option specifies the Axis. Must be used in conjunction with extract_at_coordinate.')
+    extract_at_coordinate = traits.List(traits.Float, argstr='%s', sep=',', position=2, minlen=1, maxlen=3,
+        desc='"Extract data only at the coordinates specified. This option specifies the coordinates. Must be used in conjunction with extract_at_axis. Three comma-separated numbers giving the size of each voxel in mm.')
+    voxel_dims = traits.List(traits.Float, argstr='-vox %s', sep=',',
+        position=3, minlen=3, maxlen=3,
+        desc='Three comma-separated numbers giving the size of each voxel in mm.')
+    output_datatype = traits.Enum("nii", "float", "char", "short", "int", "long", "double", argstr='-datatype %s', position=2,
+                           desc='"i.e. Bfloat". Can be "char", "short", "int", "long", "float" or "double"') #, usedefault=True)
+    extension = traits.Enum("mif","nii", "float", "char", "short", "int", "long", "double", position=2,
+                           desc='"i.e. Bfloat". Can be "char", "short", "int", "long", "float" or "double"', usedefault=True)
+    layout = traits.Enum("nii", "float", "char", "short", "int", "long", "double", argstr='-output %s', position=2,
+                           desc='specify the layout of the data in memory. The actual layout produced will depend on whether the output image format can support it.')
+    scaling = traits.Float(argstr='-scaling %d', position=3,
+        units='mm', desc='''specify the data scaling parameters used to rescale the intensity values.
+     These take the form of a comma-separated 2-vector of floating-point
+     values, corresponding to offset & scale, with final intensity values being
+     given by offset + scale * stored_value. By default, the values in the
+     input image header are passed through to the output image header when
+     writing to an integer image, and reset to 0,1 (no scaling) for
+     floating-point and binary images. Note that his option has no effect for
+     floating-point and binary images.''')
+        
+class MRConvertOutputSpec(TraitedSpec):
+    converted = File(exists=True, desc='path/name of 4D volume in voxel order')
+
+class MRConvert(MRTrix3Base):
+    """
+    Perform conversion between different file types and optionally extract a subset of the input image.
+
+    If used correctly, this program can be a very useful workhorse.
+    In addition to converting images between different formats, it can
+    be used to extract specific studies from a data set, extract a specific
+    region of interest, flip the images, or to scale the intensity of the images.
+
+    Example
+    -------
+
+    >>> import nipype.interfaces.mrtrix as mrt
+    >>> mrconvert = mrt.MRConvert()
+    >>> mrconvert.inputs.in_file = 'dwi_FA.mif'
+    >>> mrconvert.inputs.out_filename = 'dwi_FA.nii'
+    >>> mrconvert.run()                                 # doctest: +SKIP
+    """
+
+    _cmd = 'mrconvert'
+    input_spec=MRConvertInputSpec
+    output_spec=MRConvertOutputSpec
+
+    def _list_outputs(self):
+        outputs = self.output_spec().get()
+        outputs['converted'] = self.inputs.out_filename
+        if not isdefined(outputs['converted']):
+            outputs['converted'] = op.abspath(self._gen_outfilename())
+        else:
+            outputs['converted'] = op.abspath(outputs['converted'])
+        return outputs
+
+    def _gen_filename(self, name):
+        if name is 'out_filename':
+            return self._gen_outfilename()
+        else:
+            return None
+    def _gen_outfilename(self):
+        _, name , _ = split_filename(self.inputs.in_file)
+        if isdefined(self.inputs.out_filename):
+            outname = self.inputs.out_filename
+        else:
+            outname = name + '_mrconvert.' + self.inputs.extension
+        return outname
+
+
 class ResponseSDInputSpec(MRTrix3BaseInputSpec):
     in_file = File(exists=True, argstr='%s', mandatory=True, position=-2,
                    desc='input diffusion weighted images')
