@@ -5,7 +5,7 @@ from __future__ import absolute_import
 
 from .utils import (Mesh2PVE, Generate5tt, BrainMask, TensorMetrics,
                    ComputeTDI, TCK2VTK)
-from .preprocess import ResponseSD, ACTPrepareFSL, ReplaceFSwithFIRST, MRConvert
+from .preprocess import ResponseSD, ACTPrepareFSL, MakeGMWMI, ReplaceFSwithFIRST, MRConvert
 from .tracking import Tractography
 from .reconst import FitTensor, EstimateFOD
 from .connectivity import LabelConfig, BuildConnectome

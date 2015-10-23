@@ -89,7 +89,6 @@ class LSFPlugin(SGELikeBatchManagerBase):
         cmd.inputs.args = '%s -J %s sh %s' % (bsubargs,
                                               jobname,
                                               scriptfile)  # -J job_name_spec
-                
         logger.debug('bsub ' + cmd.inputs.args)
         oldlevel = iflogger.level
         iflogger.setLevel(logging.getLevelName('CRITICAL'))

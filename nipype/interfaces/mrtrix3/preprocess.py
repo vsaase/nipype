@@ -195,7 +195,7 @@ class ACTPrepareFSLInputSpec(CommandLineInputSpec):
                    desc='input anatomical image')
 
     out_file = File(
-        'act_5tt.mif', argstr='%s', mandatory=True, position=-1,
+        'act_5tt.nii', argstr='%s', mandatory=True, position=-1,
         usedefault=True, desc='output file after processing')
 
 
@@ -223,6 +223,35 @@ class ACTPrepareFSL(CommandLine):
     _cmd = 'act_anat_prepare_fsl'
     input_spec = ACTPrepareFSLInputSpec
     output_spec = ACTPrepareFSLOutputSpec
+
+    def _list_outputs(self):
+        outputs = self.output_spec().get()
+        outputs['out_file'] = op.abspath(self.inputs.out_file)
+        return outputs
+
+class MakeGMWMIInputSpec(CommandLineInputSpec):
+    in_file = File(exists=True, argstr='%s', mandatory=True, position=-2,
+                   desc='input 5TT image')
+
+    out_file = File(
+        'gmwmi.nii.gz', argstr='%s', mandatory=True, position=-1,
+        usedefault=True, desc='output file after processing')
+
+
+class MakeGMWMIOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='the output response file')
+
+
+class MakeGMWMI(CommandLine):
+
+    """
+    Generate GM / WM Interface mask for Anatomically
+    Constrained Tractography (ACT).
+    """
+
+    _cmd = '5tt2gmwmi'
+    input_spec = MakeGMWMIInputSpec
+    output_spec = MakeGMWMIOutputSpec
 
     def _list_outputs(self):
         outputs = self.output_spec().get()

@@ -97,6 +97,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
 
     mri_convert_Brain = pe.Node(interface=fs.MRIConvert(), name='mri_convert_Brain')
     mri_convert_Brain.inputs.out_type = 'nii'
+    mri_convert_T1 = mri_convert_Brain.clone(name='mri_convert_T1')
     mri_convert_ROI_scale500 = mri_convert_Brain.clone('mri_convert_ROI_scale500')
 
     mris_convertLH = pe.Node(interface=fs.MRIsConvert(), name='mris_convertLH')
@@ -111,6 +112,16 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     mris_convertLHlabels = mris_convertLH.clone('mris_convertLHlabels')
     mris_convertRHlabels = mris_convertLH.clone('mris_convertRHlabels')
 
+    """
+    ACT
+    """
+    
+    coregister_act = pe.Node(interface=fsl.FLIRT(dof=6), name = 'coregister_act')
+    coregister_act.inputs.cost = ('normmi')
+    act_fsl = pe.Node(interface=mrtrix3.ACTPrepareFSL(), name = 'act_fsl')
+    applyxfm_act = pe.Node(interface=fsl.ApplyXfm4D(), name = 'applyxfm_act')
+    makegmwmi = pe.Node(interface=mrtrix3.MakeGMWMI(), name='makegmwmi')
+    
     """
     Diffusion processing nodes
     --------------------------
@@ -230,6 +241,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     """
 
     mapping.connect([(FreeSurferSource, mri_convert_Brain,[('brain','in_file')])])
+    mapping.connect([(FreeSurferSource, mri_convert_T1,[('T1','in_file')])])
 
     """
     Surface conversions to GIFTI (pial, white, inflated, and sphere for both hemispheres)
@@ -255,6 +267,22 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     mapping.connect([(FreeSurferSourceLH, mris_convertLHlabels, [(('annot', select_aparc_annot), 'annot_file')])])
     mapping.connect([(FreeSurferSourceRH, mris_convertRHlabels, [(('annot', select_aparc_annot), 'annot_file')])])
 
+    """
+    Make the 5TT image for Anatomically Constrained Tractography
+    ---------------------
+    we coregister the 5tt image to the diffusion image and create am GM/WM interface mask
+    """
+
+    mapping.connect([(mri_convert_T1, act_fsl,[('out_file','in_file')])])
+    
+    mapping.connect([(act_fsl, coregister_act,[('out_file','in_file')])])
+    mapping.connect([(inputnode_within, coregister_act,[("dwi","reference")])])
+    
+    mapping.connect([(act_fsl, applyxfm_act,[('out_file','in_file')])])
+    mapping.connect([(coregister_act, applyxfm_act,[('out_matrix_file','in_matrix_file')])])
+    mapping.connect([(inputnode_within, applyxfm_act,[("dwi","reference")])])
+    mapping.connect([(applyxfm_act, makegmwmi,[("out_file","in_file")])])
+    
 
     """
     Diffusion Processing
@@ -277,8 +305,10 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     mapping.connect([(responsesd, estimatefod,[("out_file","response")])])
     
     mapping.connect([(estimatefod, tractography,[("out_file","in_file")])])
-    mapping.connect([(brainmask, tractography,[("out_file","seed_image")])])
-    mapping.connect([(brainmask, tractography,[("out_file","roi_mask")])])
+    #mapping.connect([(brainmask, tractography,[("out_file","seed_image")])])
+    #mapping.connect([(brainmask, tractography,[("out_file","roi_mask")])])
+    mapping.connect([(applyxfm_act, tractography,[("out_file","act_file")])])
+    mapping.connect([(makegmwmi, tractography,[("out_file","seed_gmwmi")])])
     
     
     mapping.connect([(tractography, tracks2prob,[("out_file","in_file")])])

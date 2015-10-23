@@ -591,6 +591,33 @@ class ApplyXfm(FLIRT):
     """
     input_spec = ApplyXfmInputSpec
 
+class ApplyXfm4DInputspec(FSLCommandInputSpec):
+    in_file = File(exists=True, argstr='%s', mandatory=True,
+                   position=0, desc='input file')
+    reference = File(exists=True, argstr='%s', mandatory=True,
+                     position=1, desc='reference file')
+    out_file = File('registered.nii.gz',argstr='%s', desc='registered output file',
+                     mandatory=True, usedefault=True,
+                    position=2, hash_files=False)
+    in_matrix_file = File(argstr='%s -singlematrix', desc='matrix file',
+                    position=3, hash_files=False)
+
+class ApplyXfm4DOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc='path/name of transformed file')
+
+class ApplyXfm4D(FSLCommand):
+    """
+    Use applyxfm4D to apply a matrix transformation to a 4D image
+
+    """
+    _cmd = 'applyxfm4D'
+    input_spec = ApplyXfm4DInputspec
+    output_spec = ApplyXfm4DOutputSpec
+    
+    def _list_outputs(self):
+        outputs = self.output_spec().get()
+        outputs['out_file'] = op.abspath(self.inputs.out_file)
+        return outputs
 
 class MCFLIRTInputSpec(FSLCommandInputSpec):
     in_file = File(exists=True, position=0, argstr="-in %s", mandatory=True,
