@@ -195,7 +195,7 @@ class ACTPrepareFSLInputSpec(CommandLineInputSpec):
                    desc='input anatomical image')
 
     out_file = File(
-        'act_5tt.nii', argstr='%s', mandatory=True, position=-1,
+        'act_5tt.nii.gz', argstr='%s', mandatory=True, position=-1,
         usedefault=True, desc='output file after processing')
 
 
