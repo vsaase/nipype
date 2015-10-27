@@ -98,7 +98,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     mri_convert_Brain = pe.Node(interface=fs.MRIConvert(), name='mri_convert_Brain')
     mri_convert_Brain.inputs.out_type = 'nii'
     mri_convert_T1 = mri_convert_Brain.clone(name='mri_convert_T1')
-    mri_convert_ROI_scale500 = mri_convert_Brain.clone('mri_convert_ROI_scale500')
+    mri_convert_ROI = mri_convert_Brain.clone('mri_convert_ROI')
 
     mris_convertLH = pe.Node(interface=fs.MRIsConvert(), name='mris_convertLH')
     mris_convertLH.inputs.out_datatype = 'gii'
@@ -162,6 +162,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
 
     parcellate = pe.Node(interface=cmtk.Parcellate(), name="Parcellate")
     parcellate.inputs.parcellation_name = parcellation_name
+    parcellate.inputs.dilation = True
 
     """
     The CreateMatrix interface takes in the remapped aparc+aseg image as well as the label dictionary and fiber tracts
@@ -234,7 +235,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
 
     mapping.connect([(inputnode_within, parcellate,[("subjects_dir","subjects_dir")])])
     mapping.connect([(inputnode_within, parcellate,[("subject_id","subject_id")])])
-    mapping.connect([(parcellate, mri_convert_ROI_scale500,[('roi_file','in_file')])])
+    mapping.connect([(parcellate, mri_convert_ROI,[('roiv_file','in_file')])])
 
     """
     Nifti conversion for subject's stripped brain image from Freesurfer:
@@ -339,7 +340,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
                     creatematrix, 'resolution_network_file')
     mapping.connect([(inputnode_within, creatematrix,[("subject_id","out_matrix_file")])])
     mapping.connect([(inputnode_within, creatematrix,[("subject_id","out_matrix_mat_file")])])
-    mapping.connect([(parcellate, creatematrix,[("roi_file","roi_file")])])
+    mapping.connect([(parcellate, creatematrix,[("roiv_file","roi_file")])])
 
     """
     The merge nodes defined earlier are used here to create lists of the files which are
@@ -358,7 +359,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     mapping.connect([(mris_convertLHlabels, giftiLabels,[("converted","in1")])])
     mapping.connect([(mris_convertRHlabels, giftiLabels,[("converted","in2")])])
 
-    mapping.connect([(parcellate, niftiVolumes,[("roi_file","in1")])])
+    mapping.connect([(parcellate, niftiVolumes,[("roiv_file","in1")])])
     mapping.connect([(inputnode_within, niftiVolumes,[("dwi","in2")])])
     mapping.connect([(mri_convert_Brain, niftiVolumes,[("out_file","in3")])])
 
@@ -455,7 +456,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
                                                 ("CreateMatrix.matrix_files", "networks"),
                                                 ("CreateMatrix.filtered_tractographies", "filtered_tracts"),
                                                 ("merge_nfib_csvs.csv_file", "fiber_csv"),
-                                                ("mri_convert_ROI_scale500.out_file", "rois"),
+                                                ("mri_convert_ROI.out_file", "rois"),
                                                 ("trk2tdi.out_file", "dipy_tdi"),
                                                 ("mri_convert_Brain.out_file", "struct"),
                                                 ("MRconvert_tracks2prob.converted", "mrtrix_tdi")])
