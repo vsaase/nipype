@@ -11,7 +11,7 @@ import os.path as op                      # system functions
 from ....interfaces import io as nio           # Data i/o
 from ....interfaces import utility as util     # utility
 from ....pipeline import engine as pe          # pypeline engine
-from ....interfaces import (fsl, ants, cmtk, dipy, mrtrix, mrtrix3)
+from ....interfaces import (fsl, dipy, mrtrix, mrtrix3)
 from ....algorithms import misc
 from ....interfaces import freesurfer as fs    # freesurfer
 from ..connectivity.nx import create_networkx_pipeline, create_cmats_to_csv_pipeline

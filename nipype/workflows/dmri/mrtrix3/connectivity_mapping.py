@@ -116,11 +116,11 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     ACT
     """
     
-    coregister_act = pe.Node(interface=fsl.FLIRT(dof=6), name = 'coregister_act')
-    coregister_act.inputs.cost = ('normmi')
-    act_fsl = pe.Node(interface=mrtrix3.ACTPrepareFSL(), name = 'act_fsl')
-    applyxfm_act = pe.Node(interface=fsl.ApplyXfm4D(), name = 'applyxfm_act')
-    makegmwmi = pe.Node(interface=mrtrix3.MakeGMWMI(), name='makegmwmi')
+#    coregister_act = pe.Node(interface=fsl.FLIRT(dof=6), name = 'coregister_act')
+#    coregister_act.inputs.cost = ('normmi')
+#    act_fsl = pe.Node(interface=mrtrix3.ACTPrepareFSL(), name = 'act_fsl')
+#    applyxfm_act = pe.Node(interface=fsl.ApplyXfm4D(), name = 'applyxfm_act')
+#    makegmwmi = pe.Node(interface=mrtrix3.MakeGMWMI(), name='makegmwmi')
     
     """
     Diffusion processing nodes
@@ -162,7 +162,6 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
 
     parcellate = pe.Node(interface=cmtk.Parcellate(), name="Parcellate")
     parcellate.inputs.parcellation_name = parcellation_name
-    parcellate.inputs.dilation = True
 
     """
     The CreateMatrix interface takes in the remapped aparc+aseg image as well as the label dictionary and fiber tracts
@@ -235,7 +234,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
 
     mapping.connect([(inputnode_within, parcellate,[("subjects_dir","subjects_dir")])])
     mapping.connect([(inputnode_within, parcellate,[("subject_id","subject_id")])])
-    mapping.connect([(parcellate, mri_convert_ROI,[('roiv_file','in_file')])])
+    mapping.connect([(parcellate, mri_convert_ROI,[('roi_file','in_file')])])
 
     """
     Nifti conversion for subject's stripped brain image from Freesurfer:
@@ -274,15 +273,15 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     we coregister the 5tt image to the diffusion image and create am GM/WM interface mask
     """
 
-    mapping.connect([(mri_convert_T1, act_fsl,[('out_file','in_file')])])
-    
-    mapping.connect([(act_fsl, coregister_act,[('out_file','in_file')])])
-    mapping.connect([(inputnode_within, coregister_act,[("dwi","reference")])])
-    
-    mapping.connect([(act_fsl, applyxfm_act,[('out_file','in_file')])])
-    mapping.connect([(coregister_act, applyxfm_act,[('out_matrix_file','in_matrix_file')])])
-    mapping.connect([(inputnode_within, applyxfm_act,[("dwi","reference")])])
-    mapping.connect([(applyxfm_act, makegmwmi,[("out_file","in_file")])])
+#    mapping.connect([(mri_convert_T1, act_fsl,[('out_file','in_file')])])
+#    
+#    mapping.connect([(act_fsl, coregister_act,[('out_file','in_file')])])
+#    mapping.connect([(inputnode_within, coregister_act,[("dwi","reference")])])
+#    
+#    mapping.connect([(act_fsl, applyxfm_act,[('out_file','in_file')])])
+#    mapping.connect([(coregister_act, applyxfm_act,[('out_matrix_file','in_matrix_file')])])
+#    mapping.connect([(inputnode_within, applyxfm_act,[("dwi","reference")])])
+    #mapping.connect([(applyxfm_act, makegmwmi,[("out_file","in_file")])])
     
 
     """
@@ -306,10 +305,10 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     mapping.connect([(responsesd, estimatefod,[("out_file","response")])])
     
     mapping.connect([(estimatefod, tractography,[("out_file","in_file")])])
-    #mapping.connect([(brainmask, tractography,[("out_file","seed_image")])])
-    #mapping.connect([(brainmask, tractography,[("out_file","roi_mask")])])
-    mapping.connect([(applyxfm_act, tractography,[("out_file","act_file")])])
-    mapping.connect([(makegmwmi, tractography,[("out_file","seed_gmwmi")])])
+    mapping.connect([(brainmask, tractography,[("out_file","seed_image")])])
+    mapping.connect([(brainmask, tractography,[("out_file","roi_mask")])])
+    #mapping.connect([(applyxfm_act, tractography,[("out_file","act_file")])])
+    #mapping.connect([(makegmwmi, tractography,[("out_file","seed_gmwmi")])])
     
     
     mapping.connect([(tractography, tracks2prob,[("out_file","in_file")])])
@@ -340,7 +339,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
                     creatematrix, 'resolution_network_file')
     mapping.connect([(inputnode_within, creatematrix,[("subject_id","out_matrix_file")])])
     mapping.connect([(inputnode_within, creatematrix,[("subject_id","out_matrix_mat_file")])])
-    mapping.connect([(parcellate, creatematrix,[("roiv_file","roi_file")])])
+    mapping.connect([(parcellate, creatematrix,[("roi_file","roi_file")])])
 
     """
     The merge nodes defined earlier are used here to create lists of the files which are
@@ -359,7 +358,7 @@ def create_connectivity_pipeline(name="connectivity", parcellation_name='scale50
     mapping.connect([(mris_convertLHlabels, giftiLabels,[("converted","in1")])])
     mapping.connect([(mris_convertRHlabels, giftiLabels,[("converted","in2")])])
 
-    mapping.connect([(parcellate, niftiVolumes,[("roiv_file","in1")])])
+    mapping.connect([(parcellate, niftiVolumes,[("roi_file","in1")])])
     mapping.connect([(inputnode_within, niftiVolumes,[("dwi","in2")])])
     mapping.connect([(mri_convert_Brain, niftiVolumes,[("out_file","in3")])])
 
