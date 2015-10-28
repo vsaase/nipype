@@ -3,8 +3,7 @@ from __future__ import absolute_import
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 # -*- coding: utf-8 -*-
 
-from .utils import (Mesh2PVE, Generate5tt, BrainMask, TensorMetrics,
-                   ComputeTDI, TCK2VTK)
+from .utils import (Mesh2PVE, Generate5tt, BrainMask, TensorMetrics, ComputeTDI, TCK2VTK)
 from .preprocess import ResponseSD, ACTPrepareFSL, MakeGMWMI, ReplaceFSwithFIRST, MRConvert
 from .tracking import Tractography
 from .reconst import FitTensor, EstimateFOD
