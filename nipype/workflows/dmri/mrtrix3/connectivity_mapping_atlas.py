@@ -327,7 +327,7 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
                                                 ("CreateMatrix.filtered_tractographies", "filtered_tracts"),
                                                 ("merge_nfib_csvs.csv_file", "fiber_csv"),
                                                 ("trk2tdi.out_file", "dipy_tdi"),
-                                                ("mri_convert_Brain.out_file", "struct"),
+                                                ("act_fsl.out_file", "struct"),
                                                 ("MRconvert_tracks2prob.converted", "mrtrix_tdi")])
         ])
 
