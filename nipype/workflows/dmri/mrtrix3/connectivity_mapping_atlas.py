@@ -8,12 +8,10 @@ Created on Fri Oct 23 13:51:18 2015
 import inspect
 import os.path as op                      # system functions
 
-from ....interfaces import io as nio           # Data i/o
 from ....interfaces import utility as util     # utility
 from ....pipeline import engine as pe          # pypeline engine
 from ....interfaces import (fsl, ants, cmtk, dipy, mrtrix, mrtrix3)
 from ....algorithms import misc
-from ....interfaces import freesurfer as fs    # freesurfer
 from ..connectivity.nx import create_networkx_pipeline, create_cmats_to_csv_pipeline
 
 
@@ -25,13 +23,12 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
                                                               "dwi",
                                                               "bvecs",
                                                               "bvals",
-                                                              "subjects_dir",
+                                                              "t1",
                                                               "resolution_network_file",
                                                               "roi_file",
                                                               "template_file"]),
                                                       name="inputnode_within")
 
-    FreeSurferSource = pe.Node(interface=nio.FreeSurferSource(), name='fssource')
 
     """
     Creating the workflow's nodes
@@ -42,11 +39,6 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
     Conversion nodes
     ----------------
     """
-
-
-    mri_convert_Brain = pe.Node(interface=fs.MRIConvert(), name='mri_convert_Brain')
-    mri_convert_Brain.inputs.out_type = 'nii'
-    mri_convert_T1 = mri_convert_Brain.clone(name='mri_convert_T1')
     
     
     fiberDataArrays = pe.Node(interface=util.Merge(4), name="FiberDataArrays")
@@ -174,22 +166,6 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
 
     mapping = pe.Workflow(name='mapping')
 
-    """
-    First, we connect the input node to the FreeSurfer input nodes.
-    """
-
-    mapping.connect([(inputnode_within, FreeSurferSource,[("subjects_dir","subjects_dir")])])
-    mapping.connect([(inputnode_within, FreeSurferSource,[("subject_id","subject_id")])])
-
-
-    """
-    Nifti conversion for subject's stripped brain image from Freesurfer:
-    """
-
-    mapping.connect([(FreeSurferSource, mri_convert_Brain,[('brain','in_file')])])
-    mapping.connect([(FreeSurferSource, mri_convert_T1,[('T1','in_file')])])
-
-    
 
     """
     Make the 5TT image for Anatomically Constrained Tractography
@@ -197,7 +173,7 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
     we coregister the 5tt image to the diffusion image and create am GM/WM interface mask
     """
 
-    mapping.connect([(mri_convert_T1, act_fsl,[('out_file','in_file')])])
+    mapping.connect([(inputnode_within, act_fsl,[('t1','in_file')])])
     
     mapping.connect([(act_fsl, coregister_act,[('out_file','in_file')])])
     mapping.connect([(inputnode_within, coregister_act,[("dwi","reference")])])
@@ -244,16 +220,17 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
     ---------------------
     we coregister the roi image to the structural image
     we coregister the diffusion image to the structural image
-    """
-    mapping.connect(inputnode_within, 'template_file', reg, 'moving_image')
-    mapping.connect(mri_convert_Brain,'out_file', reg,'fixed_image')
+    """   
     
-    mapping.connect(mri_convert_Brain,'out_file', warproi,'reference_image')
+    mapping.connect(inputnode_within, 'template_file', reg, 'moving_image')
+    mapping.connect(act_fsl,'out_file', reg,'fixed_image')
+    
+    mapping.connect(act_fsl,'out_file', warproi,'reference_image')
     mapping.connect(inputnode_within, 'roi_file', warproi, 'input_image')
     mapping.connect(reg, 'composite_transform', warproi, 'transforms')
 
     mapping.connect([(inputnode_within, coregister,[("dwi","in_file")])])
-    mapping.connect([(mri_convert_Brain, coregister,[('out_file','reference')])])
+    mapping.connect([(act_fsl, coregister,[('out_file','reference')])])
 
     """
     The MRtrix-tracked fibers are converted to TrackVis format (with voxel and data dimensions grabbed from the DWI).
@@ -261,7 +238,7 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
     """
 
     mapping.connect([(inputnode_within, tck2trk,[("dwi","image_file")])])
-    mapping.connect([(mri_convert_Brain, tck2trk,[("out_file","registration_image_file")])])
+    mapping.connect([(act_fsl, tck2trk,[("out_file","registration_image_file")])])
     mapping.connect([(coregister, tck2trk,[("out_matrix_file","matrix_file")])])
     mapping.connect([(tractography, tck2trk,[("out_file","in_file")])])
     mapping.connect([(tck2trk, creatematrix,[("out_file","tract_file")])])
@@ -305,7 +282,7 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
                                                                  "dwi", 
                                                                  "bvecs", 
                                                                  "bvals", 
-                                                                 "subjects_dir", 
+                                                                 "t1", 
                                                                  "resolution_network_file", 
                                                                  "roi_file",
                                                                  "template_file"
@@ -335,7 +312,7 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
                                               ("bvals", "inputnode_within.bvals"),
                                               ("bvecs", "inputnode_within.bvecs"),
                                               ("subject_id", "inputnode_within.subject_id"),
-                                              ("subjects_dir", "inputnode_within.subjects_dir"),
+                                              ("t1", "inputnode_within.t1"),
                                               ("resolution_network_file", "inputnode_within.resolution_network_file"),
                                               ("roi_file", "inputnode_within.roi_file"),
                                               ("template_file", "inputnode_within.template_file")])
