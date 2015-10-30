@@ -10,4 +10,4 @@ from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
 from .io import DataGrabber, DataSink, SelectFiles
-from .utility import IdentityInterface, Rename, Function, Select, Merge
+from .utility import IdentityInterface, Rename, Function, Select, Merge, Add4D

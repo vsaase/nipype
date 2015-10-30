@@ -566,3 +566,39 @@ class CSVReader(BaseInterface):
                 entry = self._parse_line(line)
                 outputs = self._append_entry(outputs, entry)
         return outputs
+
+class Add4DInputSpec(TraitedSpec):
+    in_file = File(mandatory=True, exists=True)
+
+
+class Add4DOutputSpec(TraitedSpec):
+    out_file = File(exists=True)
+
+
+class Add4D(BaseInterface):
+    '''Copy meta data from one Nifti file to another. Useful for preserving
+    meta data after some processing steps.'''
+    input_spec = Add4DInputSpec
+    output_spec = Add4DOutputSpec
+
+    def _run_interface(self, runtime):
+        src_nii = nb.load(self.inputs.in_file)
+        affine = src_nii.get_affine()
+        in_data = src_nii.get_data()
+        m,n,o,p = in_data.shape
+        out_data = in_data[:,:,:,0]
+        for i in range(2,p):
+            out_data = out_data + in_data[:,:,:,i]
+        out_nii = nb.Nifti1Image(out_data, affine)
+        out = nb.NiftiWrapper(out_nii, make_empty=True)
+        
+        self.out_path = os.path.join(os.getcwd(),
+                                os.path.basename(self.inputs.out_file))
+        out.to_filename(self.out_path)
+
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['out_file'] = self.out_path
+        return outputs

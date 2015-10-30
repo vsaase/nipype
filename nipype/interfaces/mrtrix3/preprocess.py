@@ -201,6 +201,7 @@ class ACTPrepareFSLInputSpec(CommandLineInputSpec):
 
 class ACTPrepareFSLOutputSpec(TraitedSpec):
     out_file = File(exists=True, desc='the output response file')
+    out_brain = File(exists=True, desc='the brain image for registration purposes')
 
 
 class ACTPrepareFSL(CommandLine):
@@ -220,13 +221,14 @@ class ACTPrepareFSL(CommandLine):
     >>> prep.run()                                 # doctest: +SKIP
     """
 
-    _cmd = 'act_anat_prepare_fsl'
+    _cmd = 'act_anat_prepare_fsl -tempdir temp -nocleanup'
     input_spec = ACTPrepareFSLInputSpec
     output_spec = ACTPrepareFSLOutputSpec
 
     def _list_outputs(self):
         outputs = self.output_spec().get()
         outputs['out_file'] = op.abspath(self.inputs.out_file)
+        outputs['out_brain'] = os.path.abspath('temp/T1_bet.nii.gz')
         return outputs
 
 class MakeGMWMIInputSpec(CommandLineInputSpec):

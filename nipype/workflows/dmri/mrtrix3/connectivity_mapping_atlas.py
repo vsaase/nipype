@@ -101,7 +101,7 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
     reg.inputs.use_histogram_matching = [False] * 2 + [True]
     reg.inputs.winsorize_lower_quantile = 0.005
     reg.inputs.winsorize_upper_quantile = 0.995
-    reg.inputs.float = False
+    reg.inputs.float = True
     reg.inputs.output_warped_image = 'output_warped_image.nii.gz'
     reg.inputs.num_threads = 4
     
@@ -223,14 +223,14 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
     """   
     
     mapping.connect(inputnode_within, 'template_file', reg, 'moving_image')
-    mapping.connect(act_fsl,'out_file', reg,'fixed_image')
+    mapping.connect(act_fsl,'out_brain', reg,'fixed_image')
     
-    mapping.connect(act_fsl,'out_file', warproi,'reference_image')
+    mapping.connect(act_fsl,'out_brain', warproi,'reference_image')
     mapping.connect(inputnode_within, 'roi_file', warproi, 'input_image')
     mapping.connect(reg, 'composite_transform', warproi, 'transforms')
 
     mapping.connect([(inputnode_within, coregister,[("dwi","in_file")])])
-    mapping.connect([(act_fsl, coregister,[('out_file','reference')])])
+    mapping.connect([(act_fsl, coregister,[('out_brain','reference')])])
 
     """
     The MRtrix-tracked fibers are converted to TrackVis format (with voxel and data dimensions grabbed from the DWI).
@@ -238,7 +238,7 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
     """
 
     mapping.connect([(inputnode_within, tck2trk,[("dwi","image_file")])])
-    mapping.connect([(act_fsl, tck2trk,[("out_file","registration_image_file")])])
+    mapping.connect([(act_fsl, tck2trk,[("out_brain","registration_image_file")])])
     mapping.connect([(coregister, tck2trk,[("out_matrix_file","matrix_file")])])
     mapping.connect([(tractography, tck2trk,[("out_file","in_file")])])
     mapping.connect([(tck2trk, creatematrix,[("out_file","tract_file")])])
