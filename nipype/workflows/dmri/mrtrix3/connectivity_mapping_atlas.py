@@ -101,9 +101,9 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
     reg.inputs.use_histogram_matching = [False] * 2 + [True]
     reg.inputs.winsorize_lower_quantile = 0.005
     reg.inputs.winsorize_upper_quantile = 0.995
-    reg.inputs.float = True
+    reg.inputs.float = False
     reg.inputs.output_warped_image = 'output_warped_image.nii.gz'
-    reg.inputs.num_threads = 4
+    reg.inputs.num_threads = 16
     
     warproi = pe.Node(ants.ApplyTransforms(), name='warproi')
     warproi.inputs.input_image_type = 3
@@ -111,7 +111,7 @@ def create_connectivity_pipeline(name="connectivity", n_tracks=50000):
     warproi.inputs.invert_transform_flags = [False]
     warproi.inputs.terminal_output = 'file'
     warproi.inputs.args = '--float'
-    warproi.inputs.num_threads = 4
+    warproi.inputs.num_threads = 16
 
     
 
