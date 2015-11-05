@@ -33,10 +33,10 @@ class FitGLMInputSpec(BaseInterfaceInputSpec):
                                      ' ``modelgen.SpecifyModel``, FitGLM does '
                                      'not  support multiple runs uless they are '
                                      'concatenated (see SpecifyModel options)'))
-    hrf_model = traits.Enum('Canonical', 'Canonical With Derivative', 'FIR',
+    hrf_model = traits.Enum('canonical', 'spm', 'spm_time', 'spm_time_dispersion',
+               'canonical_derivative', 'fir',
                             desc=("that specifies the hemodynamic reponse "
-                                  "function it can be 'Canonical', 'Canonical "
-                                  "With Derivative' or 'FIR'"), usedefault=True)
+                                  "function"), usedefault=True)
     drift_model = traits.Enum("Cosine", "Polynomial", "Blank",
                               desc=("string that specifies the desired drift "
                                       "model, to be chosen among 'Polynomial', "
