@@ -162,7 +162,7 @@ class FitGLM(BaseInterface):
         self._designmatrix_file = os.path.abspath("designmatrix.pkl")
         import pickle
         with open(self._designmatrix_file, 'wb') as handle:
-            pickle.dump(a, handle)
+            pickle.dump(design_matrix, handle)
 
         glm = GLM.glm()
         glm.fit(timeseries.T, design_matrix, method=self.inputs.method, model=self.inputs.model)
