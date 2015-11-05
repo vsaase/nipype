@@ -162,7 +162,8 @@ class FitGLM(BaseInterface):
         self._designmatrix_file = os.path.abspath("designmatrix.pkl")
         import pickle
         with open(self._designmatrix_file, 'wb') as handle:
-            pickle.dump(design_matrix, handle)
+            pickle.dump({"designmatrix": design_matrix,
+                         "reg_names": self._reg_names}, handle)
 
         glm = GLM.glm()
         glm.fit(timeseries.T, design_matrix, method=self.inputs.method, model=self.inputs.model)
@@ -207,6 +208,7 @@ class FitGLM(BaseInterface):
         outputs["constants"] = self._constants
         outputs["axis"] = self._axis
         outputs["reg_names"] = self._reg_names
+        outputs["designmatrix"] = self._designmatrix_file
         if self.inputs.model == "ar1":
             outputs["a"] = self._a_file
         if self.inputs.save_residuals:
