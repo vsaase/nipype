@@ -64,6 +64,7 @@ class FitGLMOutputSpec(TraitedSpec):
     beta = File(exists=True)
     nvbeta = traits.Any()
     s2 = File(exists=True)
+    designmatrix = File(exists=True)
     dof = traits.Any()
     constants = traits.Any()
     axis = traits.Any()
@@ -157,6 +158,11 @@ class FitGLM(BaseInterface):
             pylab.savefig("design_matrix.pdf")
             pylab.close()
             pylab.clf()
+
+        self._designmatrix_file = os.path.abspath("designmatrix.pkl")
+        import pickle
+        with open(self._designmatrix_file, 'wb') as handle:
+            pickle.dump(a, handle)
 
         glm = GLM.glm()
         glm.fit(timeseries.T, design_matrix, method=self.inputs.method, model=self.inputs.model)
