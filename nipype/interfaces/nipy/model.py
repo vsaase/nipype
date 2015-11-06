@@ -254,6 +254,7 @@ class EstimateContrastInputSpec(BaseInterfaceInputSpec):
 
 
 class EstimateContrastOutputSpec(TraitedSpec):
+    con_maps = OutputMultiPath(File(exists=True))
     stat_maps = OutputMultiPath(File(exists=True))
     z_maps = OutputMultiPath(File(exists=True))
     p_maps = OutputMultiPath(File(exists=True))
@@ -285,6 +286,7 @@ class EstimateContrast(BaseInterface):
 
         reg_names = self.inputs.reg_names
 
+        self._con_maps = []
         self._stat_maps = []
         self._p_maps = []
         self._z_maps = []
@@ -299,6 +301,12 @@ class EstimateContrast(BaseInterface):
                     contrast[i] = contrast_def[3][idx]
 
             est_contrast = glm.contrast(contrast)
+
+            con_map = np.zeros(mask.shape)
+            con_map[mask] = est_contrast.effect.T
+            con_map_file = os.path.abspath(name + "_con_map.nii")
+            nb.save(nb.Nifti1Image(con_map, nii.get_affine()), con_map_file)
+            self._con_maps.append(con_map_file)
 
             stat_map = np.zeros(mask.shape)
             stat_map[mask] = est_contrast.stat().T
@@ -323,6 +331,7 @@ class EstimateContrast(BaseInterface):
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs["stat_maps"] = self._stat_maps
+        outputs["con_maps"] = self._con_maps
         outputs["p_maps"] = self._p_maps
         outputs["z_maps"] = self._z_maps
         return outputs
