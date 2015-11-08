@@ -377,6 +377,38 @@ class Gunzip(BaseInterface):
         return outputs
 
 
+class GzipInputSpec(BaseInterfaceInputSpec):
+    in_file = File(exists=True, mandatory=True)
+
+
+class GzipOutputSpec(TraitedSpec):
+    out_file = File(exists=True)
+
+
+class Gzip(BaseInterface):
+    """Gzip wrapper
+    """
+    input_spec = GzipInputSpec
+    output_spec = GzipOutputSpec
+
+    def _gen_output_file_name(self):
+        return os.path.abspath(self.inputs.in_file + ".gz")
+
+    def _run_interface(self, runtime):
+        import gzip
+        in_file = open(self.inputs.in_file, 'rb')
+        out_file = gzip.open(self._gen_output_file_name(), 'wb')
+        out_file.write(in_file.read())
+        out_file.close()
+        in_file.close()
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['out_file'] = self._gen_output_file_name()
+        return outputs
+
+
 def replaceext(in_list, ext):
     out_list = list()
     for filename in in_list:
