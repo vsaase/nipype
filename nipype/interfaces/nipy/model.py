@@ -128,6 +128,7 @@ class FitGLM(BaseInterface):
         conditions = []
         onsets = []
         duration = []
+        amplitude = []
 
         for i, cond in enumerate(session_info[0]['cond']):
             onsets += cond['onset']
@@ -136,9 +137,13 @@ class FitGLM(BaseInterface):
                 duration += cond['duration']*len(cond['onset'])
             else:
                 duration += cond['duration']
+            if cond['pmod']:
+                amplitude += cond['pmod'][0]['param']
+            else:
+                amplitude += [1]*len(cond['onset'])
 
         if conditions:
-            paradigm = BlockParadigm(con_id=conditions, onset=onsets, duration=duration)
+            paradigm = BlockParadigm(con_id=conditions, onset=onsets, duration=duration, amplitude=amplitude)
         else:
             paradigm = None
         design_matrix, self._reg_names = dm.dmtx_light(frametimes, paradigm, drift_model=drift_model, hfcut=hpf,
