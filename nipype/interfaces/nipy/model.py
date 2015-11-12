@@ -137,7 +137,7 @@ class FitGLM(BaseInterface):
                 duration += cond['duration']*len(cond['onset'])
             else:
                 duration += cond['duration']
-            if cond['pmod']:
+            if 'pmod' in cond.keys():
                 amplitude += cond['pmod'][0]['param']
             else:
                 amplitude += [1]*len(cond['onset'])
