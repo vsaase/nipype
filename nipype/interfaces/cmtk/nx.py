@@ -220,7 +220,7 @@ def compute_node_measures(ntwk, calculate_cliques=False):
     isolate_list = nx.isolates(ntwk)
     binarized = np.zeros((ntwk.number_of_nodes(), 1))
     for value in isolate_list:
-        value = value - 1  # Zero indexing
+        value = int(value) - 1  # Zero indexing
         binarized[value] = 1
     measures['isolates'] = binarized
     if calculate_cliques:
