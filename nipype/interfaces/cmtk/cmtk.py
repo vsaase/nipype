@@ -77,11 +77,14 @@ def length(xyz, along=False):
 def get_rois_crossed(pointsmm, roiData, voxelSize):
     n_points = len(pointsmm)
     rois_crossed = []
+    l,m,n = roiData.shape
     for j in range(0, n_points):
         # store point
         x = int(pointsmm[j, 0] / float(voxelSize[0]))
         y = int(pointsmm[j, 1] / float(voxelSize[1]))
         z = int(pointsmm[j, 2] / float(voxelSize[2]))
+        if x>=l or x<0 or y>=m or y<0 or z>=n or z<0: #be kind to misbehaving fibers
+            continue
         if not roiData[x, y, z] == 0:
             rois_crossed.append(roiData[x, y, z])
     rois_crossed = list(dict.fromkeys(rois_crossed).keys())  # Removed duplicates from the list
