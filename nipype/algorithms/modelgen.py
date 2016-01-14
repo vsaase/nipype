@@ -497,7 +497,7 @@ class SpecifySPMModel(SpecifyModel):
                         infoout.amplitudes[j].extend(info.amplitudes[j])
                 if hasattr(info, 'pmod') and info.pmod:
                     for j, val in enumerate(info.pmod):
-                        if val:
+                        if type(val) == Bunch:
                             for key, data in enumerate(val.param):
                                 infoout.pmod[j].param[key].extend(data)
             if hasattr(info, 'regressors') and info.regressors:
