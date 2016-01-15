@@ -497,9 +497,12 @@ class SpecifySPMModel(SpecifyModel):
                         infoout.amplitudes[j].extend(info.amplitudes[j])
                 if hasattr(info, 'pmod') and info.pmod:
                     for j, val in enumerate(info.pmod):
-                        if type(val) == Bunch:
-                            for key, data in enumerate(val.param):
-                                infoout.pmod[j].param[key].extend(data)
+                        if val:
+                            if infoout.pmod[j]:
+                                for key, data in enumerate(val.param):
+                                    infoout.pmod[j].param[key].extend(data)
+                            else:
+                                infoout.pmod[j] = val
             if hasattr(info, 'regressors') and info.regressors:
                 # assumes same ordering of regressors across different
                 # runs and the same names for the regressors
