@@ -131,16 +131,23 @@ class FitGLM(BaseInterface):
         amplitude = []
 
         for i, cond in enumerate(session_info[0]['cond']):
-            onsets += cond['onset']
-            conditions += [cond['name']]*len(cond['onset'])
-            if len(cond['duration']) == 1:
-                duration += cond['duration']*len(cond['onset'])
-            else:
-                duration += cond['duration']
             if 'pmod' in cond.keys():
-                amplitude += cond['pmod'][0]['param']
+                for j, pmodcond in enumerate(cond['pmod']):
+                    amplitude += pmodcond['param']
+                    onsets += cond['onset']
+                    conditions += [cond['name']+'_'+pmodcond['name']]*len(cond['onset'])
+                    if len(cond['duration']) == 1:
+                        duration += cond['duration']*len(cond['onset'])
+                    else:
+                        duration += cond['duration']
             else:
                 amplitude += [1]*len(cond['onset'])
+                onsets += cond['onset']
+                conditions += [cond['name']]*len(cond['onset'])
+                if len(cond['duration']) == 1:
+                    duration += cond['duration']*len(cond['onset'])
+                else:
+                    duration += cond['duration']
 
         if conditions:
             paradigm = BlockParadigm(con_id=conditions, onset=onsets, duration=duration, amplitude=amplitude)
